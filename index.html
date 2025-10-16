@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>BlogCash ULTIMATE V7 - Eksiksiz Borsa Simülasyonu</title>
+    <style>
+        /* --- CSS KODLARI BAŞLANGIÇ --- */
+        
+        /* Temel Stil ve Renkler */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0d1117; 
+            color: #c9d1d9;
+            font-size: 14px;
+        }
+
+        .top-bar {
+            background-color: #161b22;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .logo {
+            color: #58a6ff; 
+            font-size: 1.8em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-bar {
+            background-color: #161b22;
+            padding: 10px 20px;
+            display: flex;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .nav-link {
+            color: #c9d1d9;
+            text-decoration: none;
+            margin-right: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            padding-bottom: 8px;
+            transition: color 0.2s, border-bottom 0.2s;
+        }
+
+        .nav-link.active, .nav-link:hover {
+            color: #58a6ff;
+            border-bottom: 2px solid #58a6ff;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+        
+        .panel {
+            background-color: #161b22;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        
+        /* Renkler */
+        .positive { color: #2ea043; } 
+        .negative { color: #f85149; } 
+        .highlight { color: #58a6ff; } 
+
+        /* Fiyat Ticker (Kayan yazı) */
+        .price-ticker {
+            background-color: #21262d;
+            overflow: hidden;
+            padding: 5px 0;
+            white-space: nowrap;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .ticker-item {
+            display: inline-block;
+            margin-right: 30px;
+            font-size: 0.9em;
+        }
+        
+        /* Coin Tablo Stilleri */
+        .coin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .coin-table th, .coin-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .coin-table tbody tr:hover {
+            background-color: #21262d;
+        }
+        
+        /* İşlem Sayfası Stilleri */
+        .trade-layout {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr; 
+            gap: 20px;
+        }
+        
+        .trade-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+            margin-bottom: 15px;
+        }
+        
+        .trade-info-price {
+            font-size: 2.5em;
+            font-weight: 600;
+            margin-right: 20px;
+        }
+
+        .fake-chart {
+            background-color: #0d1117;
+            height: 450px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        #chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+        
+        .order-table th, .order-table td {
+            padding: 4px 8px;
+            text-align: right;
+            position: relative;
+        }
+        
+        .order-table th:first-child, .order-table td:first-child {
+             text-align: left;
+        }
+        
+        .order-table .bid-fill, .order-table .ask-fill {
+            height: 100%;
+            position: absolute;
+            right: 0;
+            top: 0;
+            opacity: 0.1;
+            z-index: 1;
+        }
+        
+        .order-table .bid-fill { background-color: #2ea043; }
+        .order-table .ask-fill { background-color: #f85149; }
+        
+        .order-book-spread {
+            text-align: center;
+            padding: 8px 5px;
+            font-weight: bold;
+            color: #58a6ff;
+            border-top: 1px solid #30363d;
+            border-bottom: 1px solid #30363d;
+            margin: 0;
+        }
+
+        /* İşlem Paneli */
+        .transaction-panel .tabs {
+            display: flex;
+            border-bottom: 1px solid #30363d;
+            margin-bottom: 10px;
+        }
+        
+        .transaction-panel .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-right: 1px solid #30363d;
+            font-weight: 500;
+        }
+        
+        .transaction-panel .tab.active {
+            color: #58a6ff;
+            border-bottom: 2px solid #58a6ff;
+            margin-bottom: -1px;
+        }
+
+        .trade-form input, .trade-form select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            background-color: #21262d;
+            color: #c9d1d9;
+            box-sizing: border-box;
+        }
+
+        .trade-form .buy-btn { background-color: #2ea043; color: white; cursor: pointer; padding: 12px 10px; margin-top: 15px; width: 49%; float: left;}
+        .trade-form .sell-btn { background-color: #f85149; color: white; cursor: pointer; padding: 12px 10px; margin-top: 15px; width: 49%; float: right;}
+        
+        /* Cüzdan Stilleri */
+        .deposit-form input, .deposit-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #30363d; 
+            border: none;
+            border-radius: 4px;
+            color: #c9d1d9;
+        }
+
+        /* --- CSS KODLARI BİTİŞ --- */
+    </style>
+</head>
+<body onload="initApp()">
+
+    <div class="auth-overlay" id="authScreen" style="background-color: rgba(0, 0, 0, 0.95); position: fixed; width: 100%; height: 100%; z-index: 1000; justify-content: center; align-items: center;">
+        <div class="auth-box" style="background-color: #161b22; padding: 40px; border-radius: 10px; width: 400px; text-align: center; border: 1px solid #30363d;">
+            <h2 id="authTitle" style="color: #58a6ff;">Giriş Yap</h2>
+            <p>Platforma erişim için giriş yapın.</p>
+            <input type="text" id="emailInput" placeholder="E-posta" value="pro@blogcash.com" style="width: 90%; padding: 12px; margin-top: 15px; background-color: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+            <input type="password" id="passwordInput" placeholder="Şifre" value="123456" style="width: 90%; padding: 12px; margin-top: 15px; background-color: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+            <button id="authButton" onclick="handleAuth()" style="width: 100%; padding: 12px; margin-top: 20px; background-color: #58a6ff; color: #161b22; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Giriş Yap</button>
+            <p onclick="toggleAuthMode()" style="margin-top: 20px; cursor: pointer; color: #58a6ff;">Hesabın yok mu? Kaydol</p>
+        </div>
+    </div>
+    
+    <div class="modal" id="depositModal" style="position: fixed; width: 100%; height: 100%; z-index: 2000; justify-content: center; align-items: center; background-color: rgba(0, 0, 0, 0.8); display: none;">
+        <div class="modal-content" style="background-color: #161b22; padding: 30px; border-radius: 10px; width: 500px; position: relative; border: 1px solid #30363d;">
+            <span class="close-btn" onclick="closeDepositModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: #c9d1d9;">&times;</span>
+            <h2 style="color: #58a6ff;">TRY Yatırma Merkezi</h2>
+
+            <div class="deposit-form">
+                <select id="depositMethod" onchange="updateDepositDetails()" style="width: 100%;">
+                    <option value="eft">Banka Havalesi / EFT (Komisyon: %0)</option>
+                    <option value="card">Kredi/Banka Kartı (Komisyon: %2.5)</option>
+                </select>
+                
+                <input type="number" id="depositAmountInput" oninput="updateDepositDetails()" placeholder="Yatırılacak Miktar (TRY)" min="10" style="margin-top: 10px;">
+                
+                <div style="margin-top: 15px; padding: 10px; border: 1px dashed #58a6ff; font-size: 0.85em;">
+                    <p style="margin: 5px 0;">Komisyon Oranı: <strong id="commissionRateDisplay">0%</strong></p>
+                    <p style="margin: 5px 0;">Kesinti Miktarı: <strong id="commissionAmountDisplay">0.00</strong> TRY</p>
+                    <p style="margin: 5px 0;">Net Yansıyacak: <strong id="netDepositAmount" class="positive">0.00</strong> TRY</p>
+                </div>
+                
+                <button onclick="simulateDeposit()" style="background-color: #58a6ff; color: #161b22; padding: 12px; width: 100%; border: none; border-radius: 6px; margin-top: 15px; font-weight: bold;">Yatırma İşlemini Başlat</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="price-ticker" id="priceTicker"></div>
+    
+    <div class="top-bar">
+        <div class="logo" onclick="navigateTo('home')">BLOGCASH ULTIMATE V7</div>
+        <div class="auth-buttons" id="authButtons">
+            <button onclick="showAuthScreen('login')" style="background-color: transparent; color: #58a6ff; border: 1px solid #58a6ff; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Giriş Yap</button>
+            <button onclick="showAuthScreen('register')" style="background-color: #58a6ff; color: #161b22; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Üye Ol</button>
+        </div>
+        <p id="userDisplay" style="display: none; color: #58a6ff;">Hoş Geldiniz!</p>
+    </div>
+
+    <div class="nav-bar">
+        <a class="nav-link active" id="nav-home" onclick="navigateTo('home')">Anasayfa</a>
+        <a class="nav-link" id="nav-markets" onclick="navigateTo('markets')">Piyasalar</a>
+        <a class="nav-link" id="nav-trade" onclick="navigateTo('trade')">Al/Sat</a>
+        <a class="nav-link" id="nav-wallet" onclick="navigateTo('wallet')">Cüzdan</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="page-content active" id="homePage">
+            <div style="background-color: #1a2028; padding: 40px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+                <h1 style="color: #58a6ff; font-size: 2.5em;">BlogCash ULTIMATE Deneyimi</h1>
+                <p style="font-size: 1.2em; color: #c9d1d9;">Sektörün en hızlı işlem motoru ile tanışın.</p>
+                <button onclick="navigateTo('trade')" style="background-color: #2ea043; color: white; padding: 15px 30px; border: none; border-radius: 6px; margin-top: 20px; font-size: 1.1em; cursor: pointer;">Hemen İşleme Başla</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                <div class="panel">
+                     <h3 style="color: #58a6ff; margin-top: 0;">En Çok İşlem Görenler (24s)</h3>
+                     <table class="coin-table" style="font-size: 0.95em;">
+                        <thead>
+                            <tr><th>#</th><th>Sembol</th><th>Son Fiyat (TRY)</th><th>24s Yüzde</th></tr>
+                        </thead>
+                        <tbody id="homeCoinTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="panel">
+                    <h3 style="color: #f85149; margin-top: 0;">Kripto Haber Akışı</h3>
+                    <div id="newsFeed" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-content" id="marketsPage">
+            <h2 style="color: #58a6ff;">Tüm Piyasalar & Analiz</h2>
+            <div id="coinAnalysisGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+        </div>
+
+        <div class="page-content" id="tradePage">
+            <div class="chart-info-panel panel">
+                <div class="trade-header">
+                    <div style="display: flex; align-items: baseline;">
+                         <span id="tradePairDisplay" style="font-size: 1.5em; font-weight: bold; margin-right: 15px;">BLOG/TRY</span>
+                         <span id="currentPriceDisplay" class="trade-info-price positive">1.50 TRY</span>
+                         <span id="currentChangeDisplay" class="trade-info-change positive">+0.05%</span>
+                    </div>
+                    <div style="font-size: 0.9em; margin-left: auto;">24s Hacim: <span id="volumeDisplay">12.3K</span> BLOG</div>
+                </div>
+            </div>
+
+            <div class="trade-layout">
+                <div class="chart-panel panel" style="grid-column: 1 / span 1;">
+                    <div class="fake-chart">
+                        <div id="chart-line"></div>
+                        <div style="position: absolute; top: 5px; right: 10px; font-size: 0.8em; color: #c9d1d9;">CANLI ANALİZ GRAFİĞİ</div>
+                    </div>
+                </div>
+
+                <div class="orderbook-panel panel">
+                    <h2>Emir Defteri</h2>
+                    <div style="max-height: 500px; overflow: hidden; position: relative;">
+                        <table class="order-table" id="askOrderbook">
+                            <thead><tr><th style="color: #f85149;">Fiyat (TRY)</th><th>Miktar (BLOG)</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                        
+                        <p class="order-book-spread" id="currentMidPrice">1.5000 TRY (0.00% Spread)</p>
+                        
+                        <table class="order-table" id="bidOrderbook">
+                            <thead><tr><th style="color: #2ea043;">Fiyat (TRY)</th><th>Miktar (BLOG)</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <h3 style="margin-top: 15px; font-size: 1.1em;">Son İşlemler</h3>
+                    <div id="latestTrades" style="max-height: 150px; overflow-y: auto; font-size: 0.9em;"></div>
+                </div>
+
+                <div class="transaction-panel panel">
+                    <h2>İşlem Yap</h2>
+                    <div class="tabs">
+                        <div class="tab active" data-type="market" onclick="setOrderType('market', this)">Piyasa</div>
+                        <div class="tab" data-type="limit" onclick="setOrderType('limit', this)">Limit</div>
+                        <div class="tab" data-type="stop" onclick="setOrderType('stop', this)">Stop/Limit</div>
+                    </div>
+
+                    <div id="orderFormContent"></div>
+                    
+                    <h3 style="margin-top: 15px; font-size: 1.1em; color: #58a6ff;">Açık Emirler</h3>
+                    <div id="userOpenOrders" class="user-trades" style="max-height: 150px; overflow-y: auto;">
+                        <table style="width: 100%; font-size: 0.8em;">
+                            <thead><tr><th>Tip</th><th>Miktar</th><th>Fiyat</th><th>Durum</th></tr></thead>
+                            <tbody id="openOrdersBody"></tbody>
+                        </table>
+                    </div>
+                    
+                    <h3 style="margin-top: 15px; font-size: 1.1em; color: #58a6ff;">İşlem Geçmişim</h3>
+                    <div id="userTradeHistory" class="user-trades" style="max-height: 150px; overflow-y: auto;">
+                        <table style="width: 100%; font-size: 0.8em;">
+                            <thead><tr><th>Tarih</th><th>Tip</th><th>Miktar</th><th>Fiyat</th></tr></thead>
+                            <tbody id="tradeHistoryBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-content" id="walletPage">
+            <div class="wallet-panel panel">
+                <h2 style="color: #58a6ff;">Spot Cüzdanı</h2>
+                <div class="balance-info" style="margin-bottom: 30px;">
+                    <p>Toplam Değer (TRY): <strong id="totalValue">0.00</strong> TRY</p>
+                    <p>TRY Bakiyesi: <strong id="tryBalance">0.00</strong> TRY</p>
+                    <p>USDT Bakiyesi: <strong id="usdtBalance">0.00</strong> USDT</p>
+                    <p>BLOG Bakiyesi: <strong id="blogBalance">0.00</strong> BLOG</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="panel" style="background-color: #21262d;">
+                        <h3>💰 TRY Yatırma</h3>
+                        <p style="font-size: 0.9em; color: #f85149;">* Kart ve EFT/Havale komisyonları simülasyondur.</p>
+                        <button onclick="openDepositModal()" style="background-color: #2ea043; color: white; padding: 12px; width: 100%; border: none; border-radius: 4px; margin-top: 10px; font-weight: bold;">TRY YATIR</button>
+                    </div>
+                    
+                    <div class="panel" style="background-color: #21262d;">
+                        <h3>💸 TRY Çekme</h3>
+                        <input type="number" id="withdrawAmount" placeholder="Çekilecek Miktar (TRY)" min="10" class="deposit-form input">
+                        <input type="text" id="ibanInput" placeholder="IBAN (TRxx xxxx...)" class="deposit-form input">
+                        
+                        <p style="font-size: 0.9em; margin-top: 5px;">Çekim Komisyonu: <strong style="color: #f85149;">15.00 TRY Sabit</strong></p>
+                        <button onclick="simulateWithdraw()" style="background-color: #f85149; color: white; padding: 12px; width: 100%; border: none; border-radius: 4px; margin-top: 15px; font-weight: bold;">TRY ÇEK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================================
+        // MODULE 1: GENEL DURUM YÖNETİMİ VE VERİ YAPILARI
+        // ==========================================================
+
+        let isAuthenticated = false; 
+        let isDemoMode = true; 
+        
+        let demoBalances = { try: 50000.00, usdt: 1000.00, coin: 500.00 }; 
+        let realBalances = { try: 0.00, usdt: 0.00, coin: 0.00 }; 
+        let userOrders = []; 
+        let userTrades = []; 
+
+        const TRY_PER_USD = 30.00; 
+
+        // 30 adet uydurma coin
+        const coinData = [
+            { symbol: 'BLOG', name: 'BlogCash Coin', price: 1.50, change: 0.05, volume: 12300 },
+            { symbol: 'CODEX', name: 'Code Index Token', price: 200.25, change: -1.25, volume: 850 },
+            { symbol: 'NOTE', name: 'Notepad Sim', price: 0.01, change: 5.40, volume: 560000 },
+            { symbol: 'WIDG', name: 'Widget Finance', price: 7.80, change: 0.15, volume: 2200 },
+            { symbol: 'PIXL', name: 'Pixel Art Token', price: 0.95, change: -0.80, volume: 45000 },
+            { symbol: 'GAMI', name: 'Gamer Token', price: 12.30, change: 1.10, volume: 3100 },
+            { symbol: 'DEVX', name: 'Developer Xchange', price: 45.10, change: -2.20, volume: 900 },
+            { symbol: 'SECL', name: 'Security Logic', price: 99.00, change: 0.75, volume: 1500 },
+            { symbol: 'ALGO', name: 'Algorithm Unit', price: 3.20, change: -0.45, volume: 18000 },
+            { symbol: 'DATA', name: 'Data Flow', price: 15.60, change: 2.10, volume: 4500 },
+            { symbol: 'MIMO', name: 'Mimosa Coin', price: 0.55, change: -3.00, volume: 78000 },
+            { symbol: 'FUTR', name: 'Future Value', price: 10.00, change: 1.50, volume: 5500 },
+            { symbol: 'HYPR', name: 'Hyperledger Sim', price: 22.22, change: -0.60, volume: 2000 },
+            { symbol: 'LINK', name: 'Linker Protocol', price: 6.70, change: 0.30, volume: 6700 },
+            { symbol: 'STAR', name: 'Starlight Token', price: 0.15, change: 4.50, volume: 110000 },
+            { symbol: 'QUAD', name: 'Quadra System', price: 55.00, change: -1.75, volume: 1200 },
+            { symbol: 'SOLO', name: 'Solo Chain', price: 2.90, change: 0.90, volume: 9500 },
+            { symbol: 'GRID', name: 'Grid Compute', price: 1.10, change: -0.20, volume: 33000 },
+            { symbol: 'META', name: 'MetaVerse Token', price: 33.33, change: 1.90, volume: 3000 },
+            { symbol: 'PROG', name: 'Programmer Coin', price: 0.88, change: -0.10, volume: 48000 },
+            { symbol: 'TEST', name: 'Test Network', price: 0.05, change: 6.00, volume: 800000 },
+            { symbol: 'LIBR', name: 'Library Coin', price: 4.40, change: 0.40, volume: 7500 },
+            { symbol: 'ZERO', name: 'Zero Knowledge', price: 88.88, change: -0.99, volume: 1800 },
+            { symbol: 'LOOP', name: 'Loop Chain', price: 0.25, change: 3.50, volume: 90000 },
+            { symbol: 'MIST', name: 'Mist Protocol', price: 1.99, change: -2.50, volume: 15000 },
+            { symbol: 'CORE', name: 'Core Dev Token', price: 7.77, change: 1.20, volume: 6000 },
+            { symbol: 'AQUA', name: 'Aqua Coin', price: 9.10, change: -0.35, volume: 4200 },
+            { symbol: 'FIRE', name: 'Fire Wall Token', price: 11.11, change: 0.80, volume: 5000 },
+            { symbol: 'ECHO', name: 'Echo Stream', price: 0.35, change: 5.10, volume: 70000 },
+            { symbol: 'KODE', name: 'Kode Chain', price: 18.18, change: -1.90, volume: 2800 }
+        ];
+
+        let orderBook = { bids: [], asks: [] }; 
+        let latestTrades = []; 
+        let chartPoints = []; 
+        let newsData = [
+            { title: "BLOG/TRY Tüm Zamanların En Yüksek Hacmini Gördü!", trend: 'positive' },
+            { title: "CODEX Token Yükselişte: Analistlerin Görüşü Ne?", trend: 'positive' },
+            { title: "Global Kripto Piyasaları Geçici Geri Çekilme Yaşıyor.", trend: 'negative' },
+            { title: "Yeni DeFi Protokolü DEVX, Ağ Güvenliğini Artırıyor.", trend: 'highlight' },
+            { title: "WIDG Tokeni %15 Değer Kaybetti: Sebebi Bilinmiyor.", trend: 'negative' }
+        ];
+
+        function getCurrentBalances() { return isDemoMode ? demoBalances : realBalances; }
+
+        // ==========================================================
+        // MODULE 2: NAVİGASYON VE GÖRÜNÜM YÖNETİMİ
+        // ==========================================================
+
+        function updateBalances() {
+            const balances = getCurrentBalances();
+            const blogCoin = coinData.find(c => c.symbol === 'BLOG');
+            const blogValueTRY = balances.coin * (blogCoin.price * TRY_PER_USD);
+            const totalValueTRY = balances.try + (balances.usdt * TRY_PER_USD) + blogValueTRY;
+
+            if (document.getElementById('tryBalance')) document.getElementById('tryBalance').textContent = balances.try.toFixed(2);
+            if (document.getElementById('usdtBalance')) document.getElementById('usdtBalance').textContent = balances.usdt.toFixed(2);
+            if (document.getElementById('blogBalance')) document.getElementById('blogBalance').textContent = balances.coin.toFixed(2);
+            if (document.getElementById('totalValue')) document.getElementById('totalValue').textContent = totalValueTRY.toFixed(2);
+
+            if (document.getElementById('tradeTryBalance')) document.getElementById('tradeTryBalance').textContent = balances.try.toFixed(2);
+            if (document.getElementById('tradeCoinBalance')) document.getElementById('tradeCoinBalance').textContent = balances.coin.toFixed(2);
+
+            renderUserTrades();
+        }
+
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+            document.getElementById(pageId + 'Page').classList.add('active');
+            document.getElementById('nav-' + pageId).classList.add('active');
+
+            if (pageId === 'markets') {
+                renderCoinAnalysisCards(); 
+            }
+            if (pageId === 'trade') {
+                updateTradeScreen();
+                setOrderType(document.querySelector('.transaction-panel .tab.active') ? document.querySelector('.transaction-panel .tab.active').dataset.type : 'market');
+            }
+            if (pageId === 'home') {
+                 renderCoinList('home');
+                 updateNewsFeed();
+            }
+        }
+
+        // ==========================================================
+        // MODULE 3: PİYASA VERİSİ VE GÖRSELLEŞTİRME
+        // ==========================================================
+        
+        function simulatePriceChange() {
+            const blogCoin = coinData.find(c => c.symbol === 'BLOG');
+            const oldPrice = blogCoin.price;
+
+            const changeFactor = (Math.random() - 0.5) * 0.005;
+            blogCoin.price *= (1 + changeFactor);
+            blogCoin.change += (Math.random() - 0.5) * 0.5;
+            blogCoin.volume += Math.floor((Math.random() - 0.5) * 1000);
+            if (blogCoin.volume < 1000) blogCoin.volume = 1000;
+            
+            coinData.forEach(coin => {
+                if (coin.symbol !== 'BLOG') {
+                    coin.price *= (1 + (Math.random() - 0.5) * 0.008);
+                    coin.change += (Math.random() - 0.5) * 0.8;
+                }
+            });
+
+            const tryPrice = blogCoin.price * TRY_PER_USD;
+            updateChartData(tryPrice);
+            updateOrderBook(tryPrice, oldPrice * TRY_PER_USD);
+            updateTicker();
+            updateBalances();
+
+            if (document.getElementById('tradePage').classList.contains('active')) { updateTradeScreen(); }
+            if (document.getElementById('homePage').classList.contains('active')) { renderCoinList('home'); }
+            if (document.getElementById('marketsPage').classList.contains('active')) { renderCoinAnalysisCards(); }
+        }
+
+        function renderCoinList(page) {
+            const tableBody = document.getElementById('homeCoinTableBody');
+            if (!tableBody) return;
+            tableBody.innerHTML = ''; 
+            const list = coinData.slice(0, 8); // En çok işlem gören ilk 8
+
+            list.forEach((coin, index) => {
+                const row = tableBody.insertRow();
+                const tryPrice = coin.price * TRY_PER_USD;
+                const changeClass = coin.change >= 0 ? 'positive' : 'negative';
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="highlight">${coin.symbol}/TRY</td>
+                    <td>${tryPrice.toFixed(4)}</td>
+                    <td class="${changeClass}">${coin.change >= 0 ? '+' : ''}${coin.change.toFixed(2)}%</td>
+                `;
+            });
+        }
+        
+        function updateTicker() {
+            const ticker = document.getElementById('priceTicker');
+            if (!ticker) return;
+            ticker.innerHTML = '';
+            
+            let tickerHTML = '<div style="animation: ticker-move 30s linear infinite;">';
+            
+            coinData.slice(0, 15).forEach(coin => {
+                const tryPrice = coin.price * TRY_PER_USD;
+                const changeClass = coin.change >= 0 ? 'positive' : 'negative';
+                const trendIcon = coin.change >= 0 ? '▲' : '▼';
+
+                tickerHTML += `
+                    <span class="ticker-item">
+                        <span class="highlight">${coin.symbol}/TRY</span>: 
+                        ${tryPrice.toFixed(4)} 
+                        <span class="${changeClass}">${trendIcon} ${Math.abs(coin.change).toFixed(2)}%</span>
+                    </span>
+                `;
+            });
+            tickerHTML += '</div>';
+            ticker.innerHTML = tickerHTML;
+        }
+
+        function updateNewsFeed() {
+            const newsFeed = document.getElementById('newsFeed');
+            if (!newsFeed) return;
+            newsFeed.innerHTML = '';
+            
+            newsData.forEach(news => {
+                const item = document.createElement('div');
+                item.style.borderBottom = '1px dashed #30363d';
+                item.style.padding = '10px 0';
+                item.style.cursor = 'pointer';
+                item.innerHTML = `<span class="${news.trend}" style="font-size: 1.1em; font-weight: 500;">${news.title}</span><p style="margin: 3px 0 0; font-size: 0.9em; color: #8b949e;">${new Date().toLocaleTimeString()} - Analiz</p>`;
+                newsFeed.appendChild(item);
+            });
+        }
+        
+        function renderCoinAnalysisCards() {
+            const grid = document.getElementById('coinAnalysisGrid');
+            if (!grid) return;
+            grid.innerHTML = ''; 
+
+            coinData.forEach((coin, index) => {
+                const tryPrice = coin.price * TRY_PER_USD;
+                const changeClass = coin.change >= 0 ? 'positive' : 'negative';
+                const changeSign = coin.change >= 0 ? '+' : '';
+                const marketCap = (coin.price * Math.pow(10, 8) * TRY_PER_USD).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
+                
+                const high24 = tryPrice * (1 + Math.abs(coin.change) / 100 * 1.5);
+                const low24 = tryPrice * (1 - Math.abs(coin.change) / 100 * 1.5);
+
+                const cardHTML = `
+                    <div class="panel" style="border-left: 5px solid ${coin.change >= 0 ? '#2ea043' : '#f85149'};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4 class="highlight" style="margin: 0;">${coin.symbol}/TRY (${coin.name})</h4>
+                            <span class="${changeClass}" style="font-size: 1.4em; font-weight: bold;">${changeSign}${coin.change.toFixed(2)}%</span>
+                        </div>
+                        <hr style="border-color: #30363d; margin: 10px 0;">
+                        <p style="font-size: 1.8em; font-weight: 600;">${tryPrice.toFixed(4)} TRY</p>
+                        <div style="font-size: 0.9em;">
+                            <p style="margin: 5px 0;">Piyasa Değeri: <strong>${marketCap} TRY</strong></p>
+                            <p style="margin: 5px 0;">24s Yüksek: <strong class="positive">${high24.toFixed(4)}</strong></p>
+                            <p style="margin: 5px 0;">24s Düşük: <strong class="negative">${low24.toFixed(4)}</strong></p>
+                            <p style="margin: 5px 0;">24s Hacim: <strong>${coin.volume.toLocaleString()} ${coin.symbol}</strong></p>
+                        </div>
+                        <button onclick="navigateTo('trade')" style="background-color: #58a6ff; color: #161b22; padding: 8px 15px; border: none; border-radius: 4px; margin-top: 15px; width: 100%; cursor: pointer;">İşlem Yap</button>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+        }
+        
+        // ==========================================================
+        // MODULE 4: İŞLEM MOTORU VE EMİR DEĞİŞİMİ
+        // ==========================================================
+
+        function generateOrderBook(midPrice) {
+            orderBook.asks = [];
+            orderBook.bids = [];
+            const depth = 12;
+            const maxAmount = 1500;
+            
+            for (let i = 1; i <= depth; i++) {
+                const priceAsk = midPrice + (Math.random() * 0.005 * i) + 0.001; 
+                const amountAsk = 100 + Math.floor(Math.random() * maxAmount);
+                orderBook.asks.push({ price: priceAsk, amount: amountAsk });
+
+                const priceBid = midPrice - (Math.random() * 0.005 * i) - 0.001;
+                const amountBid = 100 + Math.floor(Math.random() * maxAmount);
+                orderBook.bids.push({ price: priceBid, amount: amountBid });
+            }
+            orderBook.asks.sort((a, b) => a.price - b.price); 
+            orderBook.bids.sort((a, b) => b.price - a.price); 
+        }
+        
+        function renderOrderBook() {
+            const askBody = document.getElementById('askOrderbook').getElementsByTagName('tbody')[0];
+            const bidBody = document.getElementById('bidOrderbook').getElementsByTagName('tbody')[0];
+            if (!askBody || !bidBody) return;
+            askBody.innerHTML = '';
+            bidBody.innerHTML = '';
+
+            const maxAmount = Math.max(...orderBook.asks.map(a => a.amount), ...orderBook.bids.map(b => b.amount));
+
+            orderBook.asks.slice(0, 10).forEach(order => {
+                const row = askBody.insertRow();
+                row.innerHTML = `
+                    <td class="negative" style="position: relative; text-align: left; z-index: 2;">${order.price.toFixed(4)}<div class="ask-fill" style="width: ${order.amount / maxAmount * 100}%;"></div></td>
+                    <td style="z-index: 2;">${order.amount.toFixed(2)}</td>
+                `;
+            });
+            orderBook.bids.slice(0, 10).forEach(order => {
+                const row = bidBody.insertRow();
+                row.innerHTML = `
+                    <td class="positive" style="position: relative; text-align: left; z-index: 2;">${order.price.toFixed(4)}<div class="bid-fill" style="width: ${order.amount / maxAmount * 100}%;"></div></td>
+                    <td style="z-index: 2;">${order.amount.toFixed(2)}</td>
+                `;
+            });
+        }
+
+        function updateOrderBook(newPrice, oldPrice) {
+            generateOrderBook(newPrice); 
+
+            const changeType = newPrice >= oldPrice ? 'BUY' : 'SELL';
+            const price = (orderBook.asks[0].price + orderBook.bids[0].price) / 2; 
+            const amount = 1 + Math.floor(Math.random() * 100);
+
+            latestTrades.unshift({ price, amount, type: changeType, time: new Date().toLocaleTimeString() });
+            if (latestTrades.length > 20) latestTrades.pop();
+            
+            checkAndExecuteUserOrders(newPrice); 
+        }
+
+        function renderLatestTrades() {
+            const historyDiv = document.getElementById('latestTrades');
+            if (!historyDiv) return;
+            historyDiv.innerHTML = '';
+            latestTrades.forEach(trade => {
+                const color = trade.type === 'BUY' ? 'positive' : 'negative';
+                const entry = document.createElement('p');
+                entry.style.margin = '3px 0';
+                entry.innerHTML = `<span style="font-size: 0.8em; color: #8b949e;">${trade.time}</span> <span class="${color}">${trade.price.toFixed(4)} TRY</span> (${trade.amount.toFixed(2)} BLOG)`;
+                historyDiv.prepend(entry);
+            });
+        }
+        
+        // ==========================================================
+        // MODULE 5: KULLANICI İŞLEM YÖNETİMİ (Emir Tipleri)
+        // ==========================================================
+        
+        function setOrderType(type, element = null) {
+            document.querySelectorAll('.transaction-panel .tab').forEach(tab => tab.classList.remove('active'));
+            if(element) element.classList.add('active');
+            
+            const content = document.getElementById('orderFormContent');
+            const balances = getCurrentBalances();
+            const blogPrice = (coinData.find(c => c.symbol === 'BLOG').price * TRY_PER_USD).toFixed(4);
+
+            let formHTML = `
+                <p>TRY Bakiyesi: <strong id="tradeTryBalance">${balances.try.toFixed(2)}</strong> TRY</p>
+                <p>BLOG Bakiyesi: <strong id="tradeCoinBalance">${balances.coin.toFixed(2)}</strong> BLOG</p>
+                <hr style="border-color: #30363d; margin: 10px 0;">
+                <div class="trade-form">
+            `;
+
+            if (type === 'limit') {
+                formHTML += `
+                    <input type="number" id="limitPrice" placeholder="Limit Fiyatı (TRY)" value="${blogPrice}">
+                    <input type="number" id="limitAmount" placeholder="Miktar (BLOG)" value="1">
+                    <button class="buy-btn" onclick="submitOrder('LIMIT', 'BUY')">Limit AL</button>
+                    <button class="sell-btn" onclick="submitOrder('LIMIT', 'SELL')">Limit SAT</button>
+                `;
+            } else if (type === 'stop') {
+                formHTML += `
+                    <input type="number" id="stopTriggerPrice" placeholder="Tetikleme Fiyatı (TRY)" value="${blogPrice}">
+                    <input type="number" id="stopLimitPrice" placeholder="Limit Fiyatı (TRY)" value="${blogPrice}">
+                    <input type="number" id="stopAmount" placeholder="Miktar (BLOG)" value="1">
+                    <button class="buy-btn" onclick="submitOrder('STOP', 'BUY')">Stop/Limit AL</button>
+                    <button class="sell-btn" onclick="submitOrder('STOP', 'SELL')">Stop/Limit SAT</button>
+                `;
+            } else { // Market
+                formHTML += `
+                    <p style="color: #8b949e; margin-top: 0;">Mevcut Piyasa Fiyatından Hızlı İşlem.</p>
+                    <input type="number" id="marketAmount" placeholder="Miktar (BLOG)" value="1">
+                    <button class="buy-btn" onclick="submitOrder('MARKET', 'BUY')">Piyasa AL</button>
+                    <button class="sell-btn" onclick="submitOrder('MARKET', 'SELL')">Piyasa SAT</button>
+                `;
+            }
+            formHTML += '</div>';
+            content.innerHTML = formHTML;
+            updateBalances(); // Formdaki bakiyeleri güncel tut
+        }
+
+        function submitOrder(orderType, side) {
+            if (isDemoMode && !isAuthenticated) { alert("İşlem yapmak için Giriş Yapın/Üye Olun."); return; }
+
+            const balances = getCurrentBalances();
+            const blogCoin = coinData.find(c => c.symbol === 'BLOG');
+            const currentPrice = blogCoin.price * TRY_PER_USD;
+            const time = new Date().toLocaleTimeString();
+            let amount, price, status;
+
+            if (orderType === 'MARKET') {
+                amount = parseFloat(document.getElementById('marketAmount').value);
+                price = currentPrice;
+                const cost = amount * price;
+
+                if (side === 'BUY' && balances.try >= cost) {
+                    balances.try -= cost;
+                    balances.coin += amount;
+                    status = 'Dolduruldu';
+                } else if (side === 'SELL' && balances.coin >= amount) {
+                    balances.try += cost;
+                    balances.coin -= amount;
+                    status = 'Dolduruldu';
+                } else { alert('Yetersiz bakiye!'); return; }
+                userTrades.unshift({ time, type: side, amount: amount.toFixed(2), price: price.toFixed(4), status });
+            } 
+            else {
+                let limitPrice, triggerPrice;
+                
+                if (orderType === 'LIMIT') {
+                    limitPrice = parseFloat(document.getElementById('limitPrice').value);
+                    amount = parseFloat(document.getElementById('limitAmount').value);
+                    status = 'Açık';
+                } else { 
+                    triggerPrice = parseFloat(document.getElementById('stopTriggerPrice').value);
+                    limitPrice = parseFloat(document.getElementById('stopLimitPrice').value);
+                    amount = parseFloat(document.getElementById('stopAmount').value);
+                    status = 'Beklemede';
+                }
+                
+                if (side === 'BUY' && balances.try < amount * limitPrice) { alert('Yetersiz TRY bakiyesi!'); return; }
+                if (side === 'SELL' && balances.coin < amount) { alert('Yetersiz BLOG bakiyesi!'); return; }
+                
+                userOrders.unshift({ 
+                    time, 
+                    type: orderType, 
+                    side, 
+                    amount: amount.toFixed(2), 
+                    limitPrice: limitPrice ? limitPrice.toFixed(4) : null,
+                    triggerPrice: triggerPrice ? triggerPrice.toFixed(4) : null,
+                    status 
+                });
+            }
+            updateBalances();
+        }
+
+        function checkAndExecuteUserOrders(currentPrice) {
+            userOrders = userOrders.filter(order => {
+                const { type, side, amount, limitPrice: limit, triggerPrice: trigger, status } = order;
+                const limitPrice = parseFloat(limit);
+                const triggerPrice = parseFloat(trigger);
+                const amountFloat = parseFloat(amount);
+                const balances = getCurrentBalances();
+                
+                let isExecuted = false;
+
+                if (type === 'LIMIT') {
+                    if (side === 'BUY' && currentPrice <= limitPrice) {
+                        const cost = amountFloat * limitPrice;
+                        if (balances.try >= cost) { balances.try -= cost; balances.coin += amountFloat; isExecuted = true; }
+                    } else if (side === 'SELL' && currentPrice >= limitPrice) {
+                        if (balances.coin >= amountFloat) { balances.try += amountFloat * limitPrice; balances.coin -= amountFloat; isExecuted = true; }
+                    }
+                } else if (type === 'STOP' && status === 'Beklemede') {
+                    if (side === 'BUY' && currentPrice >= triggerPrice) { order.status = 'Açık'; } 
+                    else if (side === 'SELL' && currentPrice <= triggerPrice) { order.status = 'Açık'; }
+                }
+                
+                if (type === 'STOP' && order.status === 'Açık') {
+                    if (side === 'BUY' && currentPrice <= limitPrice) {
+                        const cost = amountFloat * limitPrice;
+                        if (balances.try >= cost) { balances.try -= cost; balances.coin += amountFloat; isExecuted = true; }
+                    } else if (side === 'SELL' && currentPrice >= limitPrice) {
+                        if (balances.coin >= amountFloat) { balances.try += amountFloat * limitPrice; balances.coin -= amountFloat; isExecuted = true; }
+                    }
+                }
+
+                if (isExecuted) {
+                    userTrades.unshift({ time: new Date().toLocaleTimeString(), type: side, amount: amount, price: limitPrice || currentPrice, status: 'Dolduruldu' });
+                    updateBalances();
+                    return false; 
+                }
+                return true; 
+            });
+            renderUserTrades();
+        }
+
+        function renderUserTrades() {
+            const openBody = document.getElementById('openOrdersBody');
+            const historyBody = document.getElementById('tradeHistoryBody');
+            if (!openBody || !historyBody) return;
+            openBody.innerHTML = '';
+            historyBody.innerHTML = '';
+            
+            userOrders.forEach(order => {
+                const row = openBody.insertRow();
+                const color = order.side === 'BUY' ? 'positive' : 'negative';
+                row.innerHTML = `
+                    <td class="${color}">${order.type} ${order.side}</td>
+                    <td>${order.amount}</td>
+                    <td>${order.limitPrice || order.triggerPrice}</td>
+                    <td><span class="highlight">${order.status}</span></td>
+                `;
+            });
+            
+            userTrades.slice(0, 10).forEach(trade => {
+                const row = historyBody.insertRow();
+                const color = trade.type === 'BUY' ? 'positive' : 'negative';
+                row.innerHTML = `
+                    <td>${trade.time}</td>
+                    <td class="${color}">${trade.type}</td>
+                    <td>${trade.amount}</td>
+                    <td>${trade.price}</td>
+                `;
+            });
+        }
+        
+        // ==========================================================
+        // MODULE 6: CÜZDAN / ÖDEME YÖNTEMLERİ
+        // ==========================================================
+        
+        function openDepositModal() {
+            if (!isAuthenticated) { showAuthScreen('login'); return; }
+            document.getElementById('depositModal').style.display = 'flex';
+            updateDepositDetails();
+        }
+
+        function closeDepositModal() { document.getElementById('depositModal').style.display = 'none'; }
+
+        function updateDepositDetails() {
+            const method = document.getElementById('depositMethod').value;
+            const depositAmountInput = document.getElementById('depositAmountInput');
+            const amount = parseFloat(depositAmountInput.value) || 0;
+            
+            let commissionRate = 0;
+            if (method === 'card') { commissionRate = 0.025; } 
+
+            const commission = amount * commissionRate;
+            const netAmount = amount - commission;
+            
+            if(document.getElementById('commissionRateDisplay')) document.getElementById('commissionRateDisplay').textContent = (commissionRate * 100).toFixed(1) + '%';
+            if(document.getElementById('commissionAmountDisplay')) document.getElementById('commissionAmountDisplay').textContent = commission.toFixed(2);
+            if(document.getElementById('netDepositAmount')) document.getElementById('netDepositAmount').textContent = netAmount.toFixed(2);
+        }
+
+        function simulateDeposit() {
+            const amount = parseFloat(document.getElementById('depositAmountInput').value);
+            const method = document.getElementById('depositMethod').value;
+            const commissionRate = method === 'card' ? 0.025 : 0;
+            const commission = amount * commissionRate;
+            const netAmount = amount - commission;
+
+            if (isNaN(amount) || amount < 10) { alert('Lütfen geçerli bir yükleme miktarı (min. 10 TRY) girin.'); return; }
+            
+            alert(`Yatırma Emri: ${netAmount.toFixed(2)} TRY (${method === 'card' ? 'Kart' : 'EFT'}) hesabınıza yansıtılıyor.`);
+            
+            setTimeout(() => {
+                realBalances.try += netAmount; 
+                updateBalances();
+                alert(`BAKİYE BAŞARILI: ${netAmount.toFixed(2)} TRY Hesabınıza yansıdı!`);
+                closeDepositModal();
+            }, 15000); 
+        }
+
+        function simulateWithdraw() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const iban = document.getElementById('ibanInput').value.trim();
+            const balances = getCurrentBalances();
+            const fixedFee = 15.00; 
+
+            if (!isAuthenticated) { alert("Çekim yapmak için giriş yapmalısınız."); return; }
+            if (!iban || iban.length < 20) { alert('Lütfen geçerli bir IBAN girin.'); return; }
+            if (isNaN(amount) || amount < 10) { alert('Lütfen geçerli bir çekme miktarı girin.'); return; }
+            if (balances.try < amount + fixedFee) { alert(`Yetersiz TRY bakiyesi. Çekim için ${fixedFee.toFixed(2)} TRY komisyon gereklidir.`); return; }
+            
+            const netAmount = amount - fixedFee;
+            
+            realBalances.try -= amount;
+            updateBalances();
+
+            alert(`Çekim Emri Başarılı: ${netAmount.toFixed(2)} TRY, IBAN: ${iban} adresine gönderildi. İşlem ücreti: ${fixedFee.toFixed(2)} TRY.`);
+        }
+
+        // ==========================================================
+        // MODULE 7: AUTH VE GRAFİK ÇİZİMİ
+        // ==========================================================
+        
+        function showAuthScreen(mode) {
+            document.getElementById('authTitle').textContent = mode === 'login' ? 'Giriş Yap' : 'Kaydol';
+            document.getElementById('authButton').textContent = mode === 'login' ? 'Giriş Yap' : 'Kaydol';
+            document.getElementById('authScreen').style.display = 'flex';
+        }
+
+        function toggleAuthMode() {
+            const currentMode = document.getElementById('authTitle').textContent === 'Giriş Yap' ? 'login' : 'register';
+            showAuthScreen(currentMode === 'login' ? 'register' : 'login');
+        }
+
+        function handleAuth() {
+            isAuthenticated = true;
+            isDemoMode = false;
+
+            document.getElementById('authButtons').style.display = 'none';
+            document.getElementById('userDisplay').style.display = 'block';
+            document.getElementById('userDisplay').textContent = `Hoş Geldiniz, ${document.getElementById('emailInput').value}!`;
+            document.getElementById('authScreen').style.display = 'none';
+            
+            updateBalances();
+            navigateTo('home'); 
+        }
+
+        function updateChartData(newPrice) {
+            const maxPoints = 60;
+            const chartHeight = 450; 
+            let normalizedPrice = 60 + (Math.random() - 0.5) * 40; 
+            const yPos = chartHeight - (normalizedPrice * (chartHeight / 100));
+            
+            chartPoints.push(yPos);
+            if (chartPoints.length > maxPoints) {
+                chartPoints.shift();
+            }
+            drawChart(newPrice);
+        }
+        
+        function drawChart(newPrice) {
+            const chartLine = document.getElementById('chart-line');
+            if (!chartLine) return;
+            const chartWidth = chartLine.offsetWidth;
+            const maxPoints = 60;
+            const step = chartWidth / (maxPoints - 1);
+            let svgPath = '';
+
+            chartLine.innerHTML = '';
+
+            const lineColor = chartPoints.length > 1 && chartPoints[chartPoints.length - 1] < chartPoints[chartPoints.length - 2] ? '#f85149' : '#2ea043';
+            
+            chartPoints.forEach((yPos, index) => {
+                const xPos = index * step;
+                if (index === 0) {
+                    svgPath += `M ${xPos},${yPos}`;
+                } else {
+                    svgPath += ` L ${xPos},${yPos}`;
+                }
+            });
+            
+            if (chartPoints.length > 1) {
+                const svg = `<svg width="${chartWidth}" height="450" style="position:absolute; top:0; left:0;">
+                                <path d="${svgPath}" stroke="${lineColor}" stroke-width="2" fill="none"/>
+                             </svg>`;
+                chartLine.innerHTML = svg;
+            }
+        }
+        
+        // ==========================================================
+        // MODULE 8: BAŞLANGIÇ YÖNETİMİ
+        // ==========================================================
+
+        function initApp() {
+            isDemoMode = true; 
+            updateBalances();
+            updateNewsFeed();
+            
+            const initialPrice = coinData.find(c => c.symbol === 'BLOG').price * TRY_PER_USD;
+            updateOrderBook(initialPrice, 0); 
+            
+            setInterval(simulatePriceChange, 1000); 
+            navigateTo('home');
+            updateDepositDetails(); // Depozito formunu init et
+        }
+
+    </script>
+</body>
+</html>
